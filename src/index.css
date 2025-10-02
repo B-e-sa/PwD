@@ -1,0 +1,40 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #1173d4;
+  --bg-dark: #101922;
+  --bg-light: #1d2a36;
+  --border-radius: 15px;
+  --dark-gray: #363636;
+  --gray: #aaaaaa;
+  --text-contrast: #ffffff;
+  --font-color: #9aa1ad;
+  --border: 3px solid #1d2731;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  background-color: var(--bg-dark);
+  font-family: "Noto Sans";
+  font-size: 0.8rem;
+}
+
+.fm {
+  font-size: 0.95rem;
+}
+
+.fl {
+  font-size: 1.75rem;
+}
