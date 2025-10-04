@@ -1,9 +1,10 @@
 <script lang="ts">
   import Arrow from "../../assets/icons/Arrow.svelte";
+  import tags from "../../stores/tags.svelte";
   import type { Command } from "../../types/Command";
   import Tag from "./Tag.svelte";
 
-  const { command, flags, description, tags }: Command = $props();
+  const { command, flags, description, tags: commandTags }: Command = $props();
 
   let commandAsList = command.split("\n");
 
@@ -20,6 +21,10 @@
     if (index === commandAsList.length - 1) return br + "0 5px 5px 5px";
 
     return br + "0 5px 5px 0px;";
+  }
+
+  function findTag(uuid: string) {
+    return $tags.find((t) => t.uuid === uuid);
   }
 
   const listFormatter = new Intl.ListFormat("en", {
@@ -54,7 +59,10 @@
         </div>
       </button>
       {#if openDescription}
-        <p style={openDescription ? "margin-top: 8px;" : ""} class="mb">
+        <p
+          style={`${openDescription ? "margin-top: 8px;" : ""} max-width: 420px;`}
+          class="mb"
+        >
           {description}
         </p>
       {/if}
@@ -65,11 +73,11 @@
       <p id="flags" class="mb">{listFormatter.format(flags)}</p>
     {/if}
 
-    {#if tags && tags.length != 0}
+    {#if commandTags && commandTags.length != 0}
       <p class="label">TAGS</p>
       <div style="display: flex;">
-        {#each tags as tag, i}
-          <Tag {...tag} style="margin-right: 6px;" />
+        {#each commandTags as tagUUID}
+          <Tag {...findTag(tagUUID)!} style="margin-right: 6px;" />
         {/each}
       </div>
     {/if}

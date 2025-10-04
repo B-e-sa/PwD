@@ -5,6 +5,7 @@
     type Filter,
     type SearchProps,
   } from "../../types/Search";
+  import Button from "./Button.svelte";
 
   let open = $state(false);
 
@@ -25,23 +26,27 @@
 </script>
 
 <div id="wrapper">
-  <button
+  <Button
     id="filter-wrapper"
-    style="position: relative; z-index: 10;"
+    style="position: relative; z-index: 10; padding-block: 6px; padding-left: 12px; margin-block: 14px;"
     onclick={() => (open = !open)}
   >
     <p>Filter by: {currentFilter}</p>
     <div id="arrow-wrapper" style={`rotate: ${open ? "90deg" : "-90deg"};`}>
       <Arrow fill="white" width={20} height={20} />
     </div>
-  </button>
+  </Button>
 
   {#if open}
     <div id="filters-wrapper" class="position: relative;">
       {#each filters as filter}
-        <button id="filter" onclick={() => handleFilterSelect(filter)}
-          >{filter}</button
+        <Button
+          id="filter"
+          style="min-width: 85px; padding-block: 8px; margin-left: 8px;"
+          onclick={() => handleFilterSelect(filter)}
         >
+          {filter}
+        </Button>
       {/each}
     </div>
   {/if}
@@ -53,30 +58,13 @@
     align-items: center;
   }
 
+  #filters-wrapper {
+    display: flex;
+  }
+
   #arrow-wrapper {
     margin-right: 2px;
     width: 20px;
     height: 20px;
-  }
-
-  #filter-wrapper {
-    padding-block: 6px;
-    padding-left: 12px;
-    margin-block: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--primary);
-    color: var(--text-contrast);
-    border-radius: 100px;
-  }
-
-  #filter {
-    color: var(--text-contrast);
-    min-width: 85px;
-    background-color: var(--primary);
-    padding-block: 8px;
-    border-radius: 100px;
-    margin-left: 8px;
   }
 </style>

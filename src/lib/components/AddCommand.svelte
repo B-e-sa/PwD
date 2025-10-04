@@ -9,6 +9,7 @@
   import stringNotEmpty from "../../utils/stringNotEmpty";
   import type { Command } from "../../types/Command";
   import TextArea from "./TextArea.svelte";
+  import Button from "./Button.svelte";
 
   type AddCommmandErrors = {
     command?: string;
@@ -30,7 +31,7 @@
       command: "",
       description: "",
       flags: [],
-      tags,
+      tags: [],
     } as Command;
 
     if (!stringNotEmpty(command)) {
@@ -48,9 +49,9 @@
       properties.flags = trimmedFlags.split(",").map((f) => f.trim());
     }
 
-    commands.update((prev) => [...prev, properties]);
+    if (tags.length != 0) properties.tags = tags.map((t) => t.uuid);
 
-    console.log(properties)
+    commands.update((prev) => [...prev, properties]);
 
     if (props.onCreate) props.onCreate();
   }
@@ -109,11 +110,13 @@
         {/each}
       </div>
     </div>
-    <button
-      id="send-button"
-      style={`background-color: var(--primary); ${!stringNotEmpty(command) ? "opacity: 0.5; cursor: not-allowed;" : ""}`}
-      onclick={handleCreateCommand}>Criar</button
+    <Button
+      disabled={!stringNotEmpty(command)}
+      style={"padding-block: 15px; padding-inline: 100px; align-self: flex-start;"}
+      onclick={handleCreateCommand}
     >
+      Criar
+    </Button>
   </div>
 </div>
 
@@ -125,18 +128,6 @@
   #bottom {
     display: flex;
     align-items: center;
-  }
-
-  #send-button {
-    background-color: var(--primary);
-    font-weight: bold;
-    color: var(--text-contrast);
-    border: none;
-    outline: none;
-    padding-block: 15px;
-    padding-inline: 100px;
-    border-radius: var(--border-radius);
-    align-self: flex-start;
   }
 
   #tag-grid {
