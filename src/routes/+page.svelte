@@ -11,6 +11,7 @@
   import { FilterEnum, type SearchProps } from "../types/Search";
   import layout from "../stores/layout.svelte";
   import TagBar from "$lib/components/TagBar.svelte";
+  import tags from "../stores/tags.svelte";
 
   let search = $state<SearchProps>({
     search: "",
@@ -35,20 +36,34 @@
     }
   }
 
-  function treatFilter() {
-    return search.search.toLocaleLowerCase().trim();
+  function treatFilters() {
+    return search.search
+      .split(",")
+      .map((s) => s.toLocaleLowerCase().trim());
   }
 
   const filteredCommands = $derived(
     $commands.filter((c) => {
-      if (search.filter === FilterEnum.Command) {
-        return c.command.toLocaleLowerCase().includes(treatFilter());
-      } else if (search.filter === FilterEnum.Flags) {
-        return c?.flags?.some((f) => f.includes(treatFilter()));
-      } else if (search.filter === FilterEnum.Tags) {
-        return c?.tags?.some((t) => t.name.includes(treatFilter()));
+      const filters = treatFilters();
+      switch (search.filter) {
+        case FilterEnum.Command:
+          return filters.some((f) => c.command.toLocaleLowerCase().includes(f));
+
+        case FilterEnum.Tags:
+          const filteredTags = $tags.filter((t) =>
+            filters.some((f) => t.name.toLocaleLowerCase().includes(f))
+          );
+          const tagIds = filteredTags.map((t) => t.uuid);
+          return c?.tags?.some((tagId) => tagIds.includes(tagId));
+
+        case FilterEnum.Flags:
+          return c?.flags?.some((flag) =>
+            filters.some((f) => flag.toLocaleLowerCase().includes(f))
+          );
+
+        default:
+          return false;
       }
-      return false;
     })
   );
 </script>
@@ -63,7 +78,11 @@
   <Input
     value={search.search}
     oninput={handleSearch}
-    placeholder="Search"
+    placeholder={search.filter === FilterEnum.Command
+      ? "Procurar"
+      : search.filter === FilterEnum.Flags || search.filter === FilterEnum.Tags
+        ? "Separe por virgula"
+        : ""}
     Adorment={Search}
     adormentProps={{ height: 25, width: 25, stroke: "var(--font-color)" }}
   />

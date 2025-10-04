@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { newMenu } from "@tauri-apps/api/menu/base";
   import colors from "../../stores/colors.svelte";
   import tags from "../../stores/tags.svelte";
   import type { Tag as TagType } from "../../types/Tag";
@@ -12,13 +13,18 @@
     onSave: (...args: any) => any;
   } = $props();
 
-  let newName = $state<string>(props.name);
-  let selectedColor = $state<string>(props.color);
+  let newName = $state<string>(props.name ?? "");
+  let selectedColor = $state<string>(props.color ?? "#ffffff");
+
   // TODO:
   // usar para desativar botão
-  let canEdit = $derived(
+  let canSave = $derived(
+    // name was changed
     (stringNotEmpty(newName) && newName.trim() != props.name) ||
-      selectedColor != props.color
+      // only the color was changed
+      (selectedColor != props.color && props.uuid) ||
+      // new tag
+      (!props.uuid && stringNotEmpty(newName))
   );
 
   function handleClose() {
@@ -26,7 +32,20 @@
   }
 
   function handleSave() {
-    if (!canEdit) return;
+    if (!canSave) return;
+
+    if (!props.uuid) {
+      tags.update((prev) => [
+        ...prev,
+        {
+          uuid: crypto.randomUUID(),
+          color: selectedColor,
+          name: newName,
+        },
+      ]);
+      props.onSave();
+      return;
+    }
 
     const tagIndex = $tags.findIndex((t) => {
       t.uuid === props.uuid;
@@ -76,7 +95,7 @@
     <span style="margin-bottom: 0; margin-right: 10px;" class="label"
       >Preview:</span
     >
-    <Tag {...props} color={selectedColor} name={newName} />
+    <Tag {...props} color={selectedColor} name={newName || "N/D"} />
   </div>
   <div style="display: flex; margin-top: 30px; justify-content: flex-end;">
     <Button
@@ -87,6 +106,7 @@
       Cancelar
     </Button>
     <Button
+      disabled={!canSave}
       onclick={handleSave}
       style="padding-inline: 35px; padding-block: 8px;"
     >

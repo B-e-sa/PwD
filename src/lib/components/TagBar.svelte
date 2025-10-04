@@ -5,10 +5,57 @@
   import layout from "../../stores/layout.svelte";
   import tags from "../../stores/tags.svelte";
   import type { Tag } from "../../types/Tag";
+  import Button from "./Button.svelte";
   import Input from "./Input.svelte";
   import TagEditor from "./TagEditor.svelte";
 
+  const Actions = {
+    Menu: 0,
+    Editing: 1,
+    Adding: 2,
+  } as const;
+  type ActionsEnum = (typeof Actions)[keyof typeof Actions];
+
+  let action = $state<ActionsEnum>(Actions.Menu);
   let selectedTag = $state<Tag | null>();
+  let search = $state<string>("");
+  let filteredTags = $derived(
+    $tags.filter((t) =>
+      t.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    )
+  );
+
+  function unselectTag() {
+    selectedTag = null;
+  }
+
+  function handleClose() {
+    layout.set({ ...$layout, tagBarOpen: false });
+  }
+
+  function handleReturn() {
+    unselectTag();
+    action = Actions.Menu;
+  }
+
+  function handleTagClick(tag: Tag) {
+    action = Actions.Editing;
+    selectedTag = tag;
+  }
+
+  function handleAddTagClick() {
+    action = Actions.Adding;
+    selectedTag = {} as Tag;
+  }
+
+  function onTagAdded() {
+    unselectTag();
+    action = Actions.Menu;
+  }
+
+  function isOnMenu() {
+    return !(action === Actions.Adding || action === Actions.Editing);
+  }
 </script>
 
 <div id="wrapper">
@@ -17,40 +64,48 @@
   >
     <div style="display: flex; align-items: center; margin-bottom: 20px;">
       <button
-        onclick={() =>
-          selectedTag
-            ? (selectedTag = null)
-            : layout.set({ ...$layout, tagBarOpen: false })}
-        style={`${selectedTag ? "rotate: 90deg;" : "margin-bottom: -5px;"} margin-right: 15px; color: var(--text-contrast); height: fit-content; width: fit-content; `}
+        onclick={() => (isOnMenu() ? handleClose() : handleReturn())}
+        style={`${!isOnMenu() ? "rotate: 90deg;" : "margin-bottom: -5px;"} margin-right: 15px; color: var(--text-contrast); height: fit-content; width: fit-content; `}
       >
-        {#if selectedTag}
+        {#if !isOnMenu()}
           <Arrow fill="white" width={25} height={25} />
         {:else}
           <Close fill="white" width={25} height={25} />
         {/if}
       </button>
-      <h2>Editar Tag</h2>
+      <h2>
+        {action === Actions.Menu
+          ? "Tags"
+          : action === Actions.Editing
+            ? "Editar Tag"
+            : "Adicionar Tag"}
+      </h2>
     </div>
-    {#if !selectedTag}
+    {#if action === Actions.Menu}
       <Input
         placeholder="Pesquisar Tag"
+        value={search}
+        onkeyup={(e) => (search = e.currentTarget.value)}
         Adorment={Search}
         adormentProps={{ width: 30, height: 30, stroke: "var(--font-color)" }}
       />
       <div id="tag-cont">
-        {#each $tags as tag}
-          <button id="tag" onclick={() => (selectedTag = tag)}>
+        <Button
+          onclick={handleAddTagClick}
+          style={"width: 100%; padding-block: 15px; margin-top: 20px; margin-bottom: 15px;"}
+        >
+          + Adicionar Tag
+        </Button>
+        {#each filteredTags as tag}
+          <button class="tag" onclick={() => handleTagClick(tag)}>
             <div id="circle" style={`background-color: ${tag.color};`}></div>
             <p>{tag.name}</p>
           </button>
         {/each}
       </div>
-    {:else}
-      <TagEditor
-        onSave={() => (selectedTag = null)}
-        onClose={() => (selectedTag = null)}
-        {...selectedTag}
-      />
+    {/if}
+    {#if (action === Actions.Editing || Actions.Adding) && selectedTag}
+      <TagEditor onSave={onTagAdded} onClose={onTagAdded} {...selectedTag} />
     {/if}
   </div>
 </div>
@@ -60,6 +115,7 @@
     z-index: 100;
     width: 450px;
     height: 100vh;
+    max-height: 100vh;
     top: 0;
     right: 0;
     position: fixed;
@@ -71,14 +127,16 @@
   }
 
   #tag-cont {
-    margin-top: 25px;
+    overflow-y: auto;
+    max-height: calc(100vh - 150px);
+    padding-bottom: 25px;
   }
 
   button {
     width: 100%;
   }
 
-  #tag {
+  .tag {
     color: var(--font-color);
     display: flex;
     align-items: center;
