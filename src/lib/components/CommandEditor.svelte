@@ -10,24 +10,33 @@
   import type { Command } from "../../types/Command";
   import TextArea from "./TextArea.svelte";
   import Button from "./Button.svelte";
+  import tags from "../../stores/tags.svelte";
 
-  type AddCommmandErrors = {
-    command?: string;
-    flags?: string;
-    tags?: string;
-  };
-  const props: HTMLAttributes<HTMLDivElement> & {
-    onCreate?: (...args: any) => any;
-  } = $props();
+  type EditCommandErrors = Partial<Command>;
 
-  let command = $state("");
-  let description = $state("");
-  let flags = $state("");
-  let tags = $state<TagType[]>([]);
-  let errors: AddCommmandErrors = $state({});
+  const props: HTMLAttributes<HTMLDivElement> &
+    Partial<Command> & {
+      onCreate?: (...args: any) => any;
+      onEdit?: (...args: any) => any;
+    } = $props();
 
-  function handleCreateCommand() {
+  function searchTags(uuids: string[]): TagType[] {
+    return uuids
+      .map((id) => $tags.find((t) => t.uuid === id))
+      .filter((t): t is TagType => t !== undefined);
+  }
+
+  let command = $state<string>(props.command || "");
+  let description = $state<string>(props.description || "");
+  let flags = $state<string>(props.flags ? props.flags.join(",") : "");
+  let commandTags = $state<TagType[]>(props.tags ? searchTags(props.tags) : []);
+  let errors = $state<EditCommandErrors>({});
+
+  const editing = !!props.uuid;
+
+  function handleEdit() {
     const properties = {
+      uuid: props.uuid || crypto.randomUUID(),
       command: "",
       description: "",
       flags: [],
@@ -49,9 +58,16 @@
       properties.flags = trimmedFlags.split(",").map((f) => f.trim());
     }
 
-    if (tags.length != 0) properties.tags = tags.map((t) => t.uuid);
+    if (commandTags.length != 0)
+      properties.tags = commandTags.map((t) => t.uuid);
 
-    commands.update((prev) => [...prev, properties]);
+    if (editing) {
+      const idx = $commands.findIndex((c) => c.uuid === props.uuid);
+      $commands[idx] = properties;
+      if (props.onEdit) props.onEdit();
+    } else {
+      commands.update((prev) => [...prev, properties]);
+    }
 
     if (props.onCreate) props.onCreate();
   }
@@ -61,15 +77,15 @@
   };
 
   function handleTagRemove(name: string) {
-    tags = tags.filter((t) => t.name !== name);
+    commandTags = commandTags.filter((t) => t.name !== name);
   }
 </script>
 
 <div
   id="wrapper"
   {...props}
-  in:fly={{ x: -200, duration: 350 }}
-  out:fly={{ x: 200, duration: 350 }}
+  in:fly={{ x: editing ? 0 : -200, duration: editing ? 0 : 350 }}
+  out:fly={{ x: editing ? 0 : 200, duration: editing ? 0 : 350 }}
 >
   <label for="comando">Comando*:</label>
   <p class="error" style="margin-top: -10px; margin-bottom: 10px">
@@ -78,7 +94,17 @@
   <TextArea
     spellcheck={false}
     value={command}
-    onkeyup={(v) => (command = v.currentTarget.value)}
+    onkeyup={(e) => (command = e.currentTarget.value)}
+    style={inputMb.style}
+  />
+  <label for="comando">Descrição:</label>
+  <p class="error" style="margin-top: -10px; margin-bottom: 10px">
+    {errors?.description}
+  </p>
+  <TextArea
+    spellcheck={false}
+    value={description}
+    onkeyup={(e) => (description = e.currentTarget.value)}
     style={inputMb.style}
   />
   <label for="flags">Flags (separe por virgula): </label>
@@ -89,18 +115,18 @@
     onkeyup={(v) => (flags = v.currentTarget.value)}
     wrapperProps={inputMb}
   />
-  <p class="error">{errors?.tags}</p>
+  <p class="error">{errors?.command}</p>
   <div style="display: flex; justify-content: space-between;">
     <div id="bottom">
       <span style="margin-right: 15px; font-weight: bold;">Tags:</span>
       <TagSelector
-        selectedTags={tags}
+        selectedTags={commandTags}
         onTagClick={(tag) => {
-          tags = [...tags, tag];
+          commandTags = [...commandTags, tag];
         }}
       />
       <div id="tag-grid">
-        {#each tags as tag, i}
+        {#each commandTags as tag, i}
           <Tag
             {...tag}
             deletable={true}
@@ -113,9 +139,9 @@
     <Button
       disabled={!stringNotEmpty(command)}
       style={"padding-block: 15px; padding-inline: 100px; align-self: flex-start;"}
-      onclick={handleCreateCommand}
+      onclick={handleEdit}
     >
-      Criar
+      {editing ? "Editar" : "Criar"}
     </Button>
   </div>
 </div>

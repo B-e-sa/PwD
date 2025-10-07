@@ -2,25 +2,52 @@
   import Arrow from "../../assets/icons/Arrow.svelte";
   import tags from "../../stores/tags.svelte";
   import type { Command } from "../../types/Command";
+  import CommandEditor from "./CommandEditor.svelte";
+  import OptionsButton from "./OptionsButton.svelte";
   import Tag from "./Tag.svelte";
 
-  const { command, flags, description, tags: commandTags }: Command = $props();
+  const {
+    uuid,
+    command,
+    flags,
+    description,
+    tags: commandTags,
+  }: Command = $props();
 
-  let commandAsList = command.split("\n");
+  const commandAsList = command.split("\n");
+  const descriptionAsList = description?.split("\n");
 
   let openDescription = $state(false);
 
-  function setWrapperBorder(index: number) {
+  let editing = $state(false);
+
+  function setEditing() {
+    editing = true;
+  }
+
+  function onEdit() {
+    editing = false;
+  }
+
+  function setDescriptionMargin(index: number) {
+    const mt = "margin-top: 8px;";
+    const mb = "margin-bottom: 8px;";
+
+    if (index === 0)
+      return index === descriptionAsList!.length - 1 ? mt + mb : mt;
+
+    return mb;
+  }
+
+  function setCommandRadius(index: number) {
     let br = "border-radius: ";
 
-    if (index === 0) {
-      if (commandAsList.length > 1) return br + "5px 5px 5px 0;";
-      return br + "5px;";
-    }
+    if (index === 0)
+      return commandAsList.length > 1 ? br + "5px 5px 5px 0;" : br + "5px;";
 
-    if (index === commandAsList.length - 1) return br + "0 5px 5px 5px";
-
-    return br + "0 5px 5px 0px;";
+    return index === commandAsList.length - 1
+      ? br + "0 5px 5px 5px"
+      : br + "0 5px 5px 0px;";
   }
 
   function findTag(uuid: string) {
@@ -33,60 +60,80 @@
   });
 </script>
 
-<div id="wrapper" role="button" tabindex="0">
-  <div>
-    <p class="label">COMMAND</p>
-    {#each commandAsList as commandLine, i}
-      <div
-        id="command-wrapper"
-        style={setWrapperBorder(i)}
-        class={`${commandAsList.length - 1 === i ? "mb" : ""}`}
-      >
-        <p id="command">{commandLine}</p>
+{#if !editing}
+  <div id="wrapper">
+    <div style="width: 100%">
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <p class="label">COMMAND</p>
+        <OptionsButton {setEditing} commandUUID={uuid} />
       </div>
-    {/each}
-
-    {#if description}
-      <button
-        onclick={() => (openDescription = !openDescription)}
-        style={`font-family: 'Noto Sans'; display: flex; align-items: center; ${!openDescription ? "margin-bottom: 20px" : ""}`}
-      >
-        <p style="margin-right: 8px; margin-bottom: 0" class="label">
-          DESCRIPTION
-        </p>
-        <div style={openDescription ? "rotate: 180deg;" : ""}>
-          <Arrow fill="var(--text-contrast)" width={10} height={10} />
-        </div>
-      </button>
-      {#if openDescription}
-        <p
-          style={`${openDescription ? "margin-top: 8px;" : ""} max-width: 420px;`}
-          class="mb"
+      {#each commandAsList as commandLine, i}
+        <div
+          id="command-wrapper"
+          style={setCommandRadius(i)}
+          class={`${commandAsList.length - 1 === i ? "mb" : ""}`}
         >
-          {description}
-        </p>
+          <p id="command">{commandLine}</p>
+        </div>
+      {/each}
+
+      {#if description}
+        <button
+          id="description"
+          onclick={() => (openDescription = !openDescription)}
+          style={`${!openDescription ? "margin-bottom: 20px" : ""}`}
+        >
+          <p style="margin-right: 8px; margin-bottom: 0" class="label">
+            DESCRIPTION
+          </p>
+          <div style={openDescription ? "rotate: 180deg;" : ""}>
+            <Arrow fill="var(--text-contrast)" width={10} height={10} />
+          </div>
+        </button>
+        {#if openDescription}
+          {#each descriptionAsList! as descriptionLine, i}
+            <p style={setDescriptionMargin(i)}>
+              {descriptionLine}
+            </p>
+          {/each}
+        {/if}
       {/if}
-    {/if}
 
-    {#if flags && flags.length > 0}
-      <p class="label">FLAGS</p>
-      <p id="flags" class="mb">{listFormatter.format(flags)}</p>
-    {/if}
+      {#if flags && flags.length > 0}
+        <p class="label">FLAGS</p>
+        <p id="flags" class="mb">{listFormatter.format(flags)}</p>
+      {/if}
 
-    {#if commandTags && commandTags.length != 0}
-      <p class="label">TAGS</p>
-      <div style="display: flex;">
-        {#each commandTags as tagUUID}
-          <Tag {...findTag(tagUUID)!} style="margin-right: 6px;" />
-        {/each}
-      </div>
-    {/if}
+      {#if commandTags && commandTags.length != 0}
+        <p class="label">TAGS</p>
+        <div style="display: flex;">
+          {#each commandTags as tagUUID}
+            <Tag {...findTag(tagUUID)!} style="margin-right: 6px;" />
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+{:else}
+  <CommandEditor
+    {onEdit}
+    {uuid}
+    {command}
+    {flags}
+    {description}
+    tags={commandTags}
+  />
+{/if}
 
 <style>
   .mb {
     margin-bottom: 20px;
+  }
+
+  #description {
+    font-family: "Noto Sans";
+    display: flex;
+    align-items: center;
   }
 
   #wrapper {
