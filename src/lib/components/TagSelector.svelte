@@ -1,4 +1,5 @@
 <script lang="ts">
+  import handleClickOutside from "../../actions/handleOutsideClick";
   import Arrow from "../../assets/icons/Arrow.svelte";
   import tags from "../../stores/tags.svelte";
   import Tag, { type TagProps } from "./Tag.svelte";
@@ -26,23 +27,6 @@
   function handleChooseTag() {
     if (!noTagsLeft) open = !open;
   }
-
-  function handleClickOutside(
-    node: HTMLElement,
-    callback: (...args: any) => any
-  ) {
-    const handleClick = (event: MouseEvent) => {
-      if (!node.contains(event.target as HTMLElement)) callback();
-    };
-
-    document.addEventListener("click", handleClick, true);
-
-    return {
-      destroy() {
-        document.removeEventListener("click", handleClick, true);
-      },
-    };
-  }
 </script>
 
 <div id="wrapper" use:handleClickOutside={() => (open = false)}>
@@ -67,7 +51,7 @@
             onTagClick(tag);
             open = false;
           }}
-          style={`min-width: 90px; margin-top: 8px; ${i === $tags.length - 1 && "margin-bottom: 5px"}`}
+          style={`min-width: 90px; margin-top: 8px;`}
         />
       {/each}
     </div>
@@ -80,6 +64,7 @@
   }
 
   #items {
+    padding-bottom: 8px;
     width: 100px;
     position: absolute;
     display: flex;

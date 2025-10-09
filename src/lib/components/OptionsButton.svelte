@@ -1,4 +1,5 @@
 <script lang="ts">
+  import handleClickOutside from "../../actions/handleOutsideClick";
   import Close from "../../assets/icons/Close.svelte";
   import Confirm from "../../assets/icons/Confirm.svelte";
   import Dots from "../../assets/icons/Dots.svelte";
@@ -37,13 +38,17 @@
   }
 </script>
 
-<div id="teste" style="position: relative;">
+<div
+  id="teste"
+  use:handleClickOutside={() => (open = false)}
+  style="position: relative;"
+>
   {#if open}
     <div id="options-cont">
       <button
         onclick={action === Actions.Editing
-          ? handleSetEditing
-          : () => (action = Actions.None)}
+          ? () => (action = Actions.None)
+          : handleSetEditing}
         style="border-radius: var(--border-radius) 0 0 var(--border-radius)"
       >
         {#if action === Actions.Excluding}

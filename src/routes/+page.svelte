@@ -1,21 +1,24 @@
 <script lang="ts">
-  import Input from "../lib/components/Input.svelte";
+  import AddButton from "$lib/components/AddButton.svelte";
+  import CommandEditor from "$lib/components/CommandEditor.svelte";
+  import SearchFilter from "$lib/components/SearchFilter.svelte";
+  import TagBar from "$lib/components/TagBar.svelte";
+  import Search from "../assets/icons/Search.svelte";
+  import type { Search as SearchProps } from "../types/Filters";
   import "../index.css";
   import Command from "../lib/components/Command.svelte";
+  import Input from "../lib/components/Input.svelte";
   import NavBar from "../lib/components/NavBar.svelte";
-  import Search from "../assets/icons/Search.svelte";
-  import SearchFilter from "$lib/components/SearchFilter.svelte";
-  import AddButton from "$lib/components/AddButton.svelte";
   import commands from "../stores/commands.svelte";
-  import { FilterEnum, type SearchProps } from "../types/Search";
   import layout from "../stores/layout.svelte";
-  import TagBar from "$lib/components/TagBar.svelte";
   import tags from "../stores/tags.svelte";
-  import CommandEditor from "$lib/components/CommandEditor.svelte";
+  import { AttributesEnum, OrdersEnum } from "../types/Filters";
+  import { filterCommands } from "../utils/filterCommands";
 
   let search = $state<SearchProps>({
     search: "",
-    filter: FilterEnum.Command,
+    filter: AttributesEnum.Command,
+    order: OrdersEnum.Updated,
   });
 
   function handleSearch(
@@ -32,34 +35,7 @@
     addingCommand = !addingCommand;
   }
 
-  function treatFilters() {
-    return search.search.split(",").map((s) => s.toLocaleLowerCase().trim());
-  }
-
-  const filteredCommands = $derived(
-    $commands.filter((c) => {
-      const filters = treatFilters();
-      switch (search.filter) {
-        case FilterEnum.Command:
-          return filters.some((f) => c.command.toLocaleLowerCase().includes(f));
-
-        case FilterEnum.Tags:
-          const filteredTags = $tags.filter((t) =>
-            filters.some((f) => t.name.toLocaleLowerCase().includes(f))
-          );
-          const tagIds = filteredTags.map((t) => t.uuid);
-          return c?.tags?.some((tagId) => tagIds.includes(tagId));
-
-        case FilterEnum.Flags:
-          return c?.flags?.some((flag) =>
-            filters.some((f) => flag.toLocaleLowerCase().includes(f))
-          );
-
-        default:
-          return false;
-      }
-    })
-  );
+  const filteredCommands = $derived(filterCommands($commands, $tags, search));
 </script>
 
 <NavBar />
@@ -72,19 +48,30 @@
   <Input
     value={search.search}
     oninput={handleSearch}
-    placeholder={search.filter === FilterEnum.Command
+    placeholder={search.filter === AttributesEnum.Command
       ? "Procurar"
-      : search.filter === FilterEnum.Flags || search.filter === FilterEnum.Tags
+      : search.filter === AttributesEnum.Flags ||
+          search.filter === AttributesEnum.Tags
         ? "Separe por virgula"
         : ""}
     Adorment={Search}
     adormentProps={{ height: 25, width: 25, stroke: "var(--font-color)" }}
   />
   <div id="actions">
-    <SearchFilter
-      currentFilter={search.filter}
-      onSelect={(f) => (search.filter = f)}
-    />
+    <div>
+      <SearchFilter
+        type="attributes"
+        style="margin-bottom: 10px;"
+        currentFilter={search.filter}
+        onSelect={(f) => (search.filter = f as AttributesEnum)}
+      />
+      <SearchFilter
+        type="order"
+        style="margin-bottom: 10px;"
+        currentFilter={search.order}
+        onSelect={(f) => (search.order = f as OrdersEnum)}
+      />
+    </div>
     <AddButton
       style={addingCommand ? "rotate: 45deg" : ""}
       onclick={toggleAddingCommand}
@@ -98,7 +85,7 @@
         style="margin-bottom: 35px;"
       />
     {/if}
-    {#each filteredCommands as command}
+    {#each filteredCommands as command (command.uuid)}
       <Command {...command} />
     {/each}
   </div>
@@ -112,8 +99,8 @@
   }
 
   #actions {
+    margin-top: 10px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
   }
 

@@ -1,14 +1,11 @@
 <script lang="ts">
   import layout from "../../stores/layout.svelte";
-  import Input from "./Input.svelte";
-  import TagBar from "./TagBar.svelte";
 </script>
 
 <header>
   <span>PwR</span>
   <nav>
     <ul>
-      <li>Home</li>
       <li>
         <button
           onclick={() =>

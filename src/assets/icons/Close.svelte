@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { IconProps } from "./icon";
+  import type { IconProps } from "../../types/Icon";
+
 
   const {
     fill = "#ffffff",

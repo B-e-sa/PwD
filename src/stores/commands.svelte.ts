@@ -12,6 +12,7 @@ const commands = writable<Command[]>([
       "Habilita o acesso via HTTP (porta 80) a ONU\nExemplo: ont wan-access http 0/1/2 3 enable",
     flags: ["mac", "sn", "desc"],
     tags: [],
+    createdAt: new Date(),
   },
 ]);
 

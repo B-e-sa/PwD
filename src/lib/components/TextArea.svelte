@@ -8,6 +8,7 @@
 
 <style>
   textarea {
+    font-family: 'Noto Sans';
     resize: vertical;
     padding: 10px;
     border: var(--border);

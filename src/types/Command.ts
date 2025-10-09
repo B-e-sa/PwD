@@ -4,4 +4,6 @@ export type Command = {
   description?: string;
   flags?: string[];
   tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
 };

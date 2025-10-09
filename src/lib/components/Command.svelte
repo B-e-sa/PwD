@@ -3,6 +3,7 @@
   import tags from "../../stores/tags.svelte";
   import type { Command } from "../../types/Command";
   import CommandEditor from "./CommandEditor.svelte";
+  import CommandLine from "./CommandLine.svelte";
   import OptionsButton from "./OptionsButton.svelte";
   import Tag from "./Tag.svelte";
 
@@ -14,8 +15,8 @@
     tags: commandTags,
   }: Command = $props();
 
-  const commandAsList = command.split("\n");
-  const descriptionAsList = description?.split("\n");
+  const commandLines = $derived(command.split("\n"));
+  const descriptionLines = $derived(description?.split("\n"));
 
   let openDescription = $state(false);
 
@@ -29,25 +30,24 @@
     editing = false;
   }
 
+  let hoveredCommandLine = $state(-1);
+
+  function onHover(idx: number) {
+    hoveredCommandLine = idx;
+  }
+
+  function onLeave() {
+    hoveredCommandLine = -1;
+  }
+
   function setDescriptionMargin(index: number) {
     const mt = "margin-top: 8px;";
     const mb = "margin-bottom: 8px;";
 
     if (index === 0)
-      return index === descriptionAsList!.length - 1 ? mt + mb : mt;
+      return index === descriptionLines!.length - 1 ? mt + mb : mt;
 
     return mb;
-  }
-
-  function setCommandRadius(index: number) {
-    let br = "border-radius: ";
-
-    if (index === 0)
-      return commandAsList.length > 1 ? br + "5px 5px 5px 0;" : br + "5px;";
-
-    return index === commandAsList.length - 1
-      ? br + "0 5px 5px 5px"
-      : br + "0 5px 5px 0px;";
   }
 
   function findTag(uuid: string) {
@@ -63,19 +63,24 @@
 {#if !editing}
   <div id="wrapper">
     <div style="width: 100%">
-      <div style="display: flex; justify-content: space-between; width: 100%;">
-        <p class="label">COMMAND</p>
-        <OptionsButton {setEditing} commandUUID={uuid} />
-      </div>
-      {#each commandAsList as commandLine, i}
+      <div style="margin-bottom: 8px;">
         <div
-          id="command-wrapper"
-          style={setCommandRadius(i)}
-          class={`${commandAsList.length - 1 === i ? "mb" : ""}`}
+          style="display: flex; justify-content: space-between; width: 100%;"
         >
-          <p id="command">{commandLine}</p>
+          <p class="label">COMANDO</p>
+          <OptionsButton {setEditing} commandUUID={uuid} />
         </div>
-      {/each}
+        {#each commandLines as commandLine, idx}
+          <CommandLine
+            {hoveredCommandLine}
+            {idx}
+            {commandLine}
+            {onHover}
+            {onLeave}
+            commandLength={commandLines.length}
+          />
+        {/each}
+      </div>
 
       {#if description}
         <button
@@ -84,14 +89,14 @@
           style={`${!openDescription ? "margin-bottom: 20px" : ""}`}
         >
           <p style="margin-right: 8px; margin-bottom: 0" class="label">
-            DESCRIPTION
+            DESCRIÇÃO
           </p>
           <div style={openDescription ? "rotate: 180deg;" : ""}>
             <Arrow fill="var(--text-contrast)" width={10} height={10} />
           </div>
         </button>
         {#if openDescription}
-          {#each descriptionAsList! as descriptionLine, i}
+          {#each descriptionLines! as descriptionLine, i}
             <p style={setDescriptionMargin(i)}>
               {descriptionLine}
             </p>
@@ -144,7 +149,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 15px;
-    transition: all 0.25s;
+    transition: all 0.2s;
 
     p {
       color: var(--font-color);
@@ -153,17 +158,6 @@
     .label {
       font-weight: bold;
       margin-bottom: 8px;
-    }
-
-    #command-wrapper {
-      width: fit-content;
-      background-color: var(--bg-light);
-      padding-inline: 15px;
-      padding-block: 8px;
-
-      #command {
-        color: var(--primary);
-      }
     }
   }
 </style>

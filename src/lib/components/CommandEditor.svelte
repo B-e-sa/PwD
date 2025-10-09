@@ -41,6 +41,8 @@
       description: "",
       flags: [],
       tags: [],
+      createdAt: props.createdAt || new Date(),
+      updatedAt: new Date(),
     } as Command;
 
     if (!stringNotEmpty(command)) {
@@ -131,18 +133,28 @@
             {...tag}
             deletable={true}
             onclick={() => handleTagRemove(tag.name)}
-            style={`${i % 2 !== 0 ? "margin-left: 5px" : ""}`}
+            style={`${i % 2 !== 0 && "margin-left: 5px"}`}
           />
         {/each}
       </div>
     </div>
-    <Button
-      disabled={!stringNotEmpty(command)}
-      style={"padding-block: 15px; padding-inline: 100px; align-self: flex-start;"}
-      onclick={handleEdit}
-    >
-      {editing ? "Editar" : "Criar"}
-    </Button>
+    <div style="display: flex;">
+      {#if editing}
+        <Button
+          onclick={props.onEdit}
+          style={"padding-inline: 15px; margin-right: 8px;"}
+        >
+          Cancelar
+        </Button>
+      {/if}
+      <Button
+        disabled={!stringNotEmpty(command)}
+        style={`${editing ? "padding-inline: 50px" : "padding-inline: 100px"}; padding-block: 15px; align-self: flex-start;`}
+        onclick={handleEdit}
+      >
+        {editing ? "Editar" : "Criar"}
+      </Button>
+    </div>
   </div>
 </div>
 

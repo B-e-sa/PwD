@@ -13,8 +13,8 @@
     onSave: (...args: any) => any;
   } = $props();
 
-  let newName = $state<string>(props.name ?? "");
-  let selectedColor = $state<string>(props.color ?? "#ffffff");
+  let newName = $state<string>(props.name || "");
+  let selectedColor = $state<string>(props.color || "#ffffff");
 
   // TODO:
   // usar para desativar botão
