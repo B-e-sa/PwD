@@ -39,3 +39,11 @@ body {
 .fl {
   font-size: 1.75rem;
 }
+
+.flex {
+  display: flex;
+}
+
+.align-center {
+  align-items: center;
+}

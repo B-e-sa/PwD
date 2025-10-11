@@ -60,14 +60,14 @@
   <div id="actions">
     <div>
       <SearchFilter
+        class="action"
         type="attributes"
-        style="margin-bottom: 10px;"
         currentFilter={search.filter}
         onSelect={(f) => (search.filter = f as AttributesEnum)}
       />
       <SearchFilter
+        class="action"
         type="order"
-        style="margin-bottom: 10px;"
         currentFilter={search.order}
         onSelect={(f) => (search.order = f as OrdersEnum)}
       />
@@ -102,6 +102,10 @@
     margin-top: 10px;
     display: flex;
     justify-content: space-between;
+  }
+
+  :global(.action) {
+    margin-bottom: 10px;
   }
 
   #page {

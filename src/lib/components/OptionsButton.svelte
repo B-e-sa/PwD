@@ -46,10 +46,10 @@
   {#if open}
     <div id="options-cont">
       <button
+        id="edit"
         onclick={action === Actions.Editing
           ? () => (action = Actions.None)
           : handleSetEditing}
-        style="border-radius: var(--border-radius) 0 0 var(--border-radius)"
       >
         {#if action === Actions.Excluding}
           <Close id="close" width={12} height={12} />
@@ -58,8 +58,8 @@
         {/if}
       </button>
       <button
+        id="delete"
         onclick={action === Actions.Excluding ? handleDelete : promptDelete}
-        style="border-radius: 0 var(--border-radius) var(--border-radius) 0"
       >
         {#if action === Actions.Excluding}
           <Confirm id="confirm" width={12} height={12} />
@@ -81,6 +81,14 @@
     right: 45px;
     background-color: var(--bg-light);
     border-radius: var(--border-radius);
+  }
+
+  #edit {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+  }
+
+  #delete {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
   }
 
   button :global(#dots path) {

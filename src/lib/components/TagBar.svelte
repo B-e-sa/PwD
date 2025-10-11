@@ -59,13 +59,12 @@
 </script>
 
 <div id="wrapper">
-  <div
-    style="position: sticky; padding: 25px; background-color: var(--bg-dark);"
-  >
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+  <div id="cont">
+    <div id="top-bar">
       <button
+        id="return-button"
         onclick={() => (isOnMenu() ? handleClose() : handleReturn())}
-        style={`${!isOnMenu() ? "rotate: 90deg;" : "margin-bottom: -5px;"} margin-right: 15px; color: var(--text-contrast); height: fit-content; width: fit-content; `}
+        style={`${!isOnMenu() ? "rotate: 90deg;" : "margin-bottom: -5px;"}`}
       >
         {#if !isOnMenu()}
           <Arrow fill="white" width={25} height={25} />
@@ -90,10 +89,7 @@
         adormentProps={{ width: 30, height: 30, stroke: "var(--font-color)" }}
       />
       <div id="tag-cont">
-        <Button
-          onclick={handleAddTagClick}
-          style={"width: 100%; padding-block: 15px; margin-top: 20px; margin-bottom: 15px;"}
-        >
+        <Button id="add-tag" onclick={handleAddTagClick}>
           + Adicionar Tag
         </Button>
         {#each filteredTags as tag}
@@ -120,20 +116,40 @@
     right: 0;
     position: fixed;
     background-color: var(--bg-dark);
+
+    :global(#add-tag) {
+      width: 100%;
+      padding-block: 15px;
+      margin-top: 20px;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      color: var(--text-contrast);
+    }
+
+    button {
+      width: 100%;
+    }
   }
 
-  h2 {
-    color: var(--text-contrast);
+  #top-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    #return-button {
+      margin-right: 15px;
+      color: var(--text-contrast);
+      height: fit-content;
+      width: fit-content;
+    }
   }
 
   #tag-cont {
     overflow-y: auto;
     max-height: calc(100vh - 150px);
     padding-bottom: 25px;
-  }
-
-  button {
-    width: 100%;
   }
 
   .tag {
@@ -159,5 +175,11 @@
     height: 18px;
     border-radius: 100%;
     margin-right: 12px;
+  }
+
+  #cont {
+    position: sticky;
+    padding: 25px;
+    background-color: var(--bg-dark);
   }
 </style>

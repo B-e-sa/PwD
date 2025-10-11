@@ -159,22 +159,6 @@
 </div>
 
 <style>
-  .error {
-    color: red;
-  }
-
-  #bottom {
-    display: flex;
-    align-items: center;
-  }
-
-  #tag-grid {
-    margin-left: 10px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
-  }
-
   #wrapper {
     display: flex;
     flex-direction: column;
@@ -191,5 +175,21 @@
     span {
       color: var(--font-color);
     }
+  }
+
+  .error {
+    color: red;
+  }
+
+  #bottom {
+    display: flex;
+    align-items: center;
+  }
+
+  #tag-grid {
+    margin-left: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
   }
 </style>

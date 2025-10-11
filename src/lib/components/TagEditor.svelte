@@ -78,7 +78,7 @@
     wrapperProps={{ style: "margin-top: 10px; margin-bottom: 20px;" }}
   />
   <p class="label">Cor:</p>
-  <div style="display: flex; align-items: center;">
+  <div class="flex align-center">
     {#each $colors as color}
       <button
         aria-label="color-select"
@@ -91,31 +91,40 @@
     {/each}
     <button id="add-button"> + </button>
   </div>
-  <div style="display: flex; align-items: center; margin-top: 25px;">
-    <span style="margin-bottom: 0; margin-right: 10px;" class="label"
-      >Preview:</span
-    >
+  <div id="preview">
+    <span class="label"> Preview: </span>
     <Tag {...props} color={selectedColor} name={newName || "N/D"} />
   </div>
   <div style="display: flex; margin-top: 30px; justify-content: flex-end;">
-    <Button
-      onclick={handleClose}
-      style="padding-inline: 12px; margin-right: 12px;"
-      variant="transparent"
-    >
+    <Button id="cancel" onclick={handleClose} variant="transparent">
       Cancelar
     </Button>
-    <Button
-      disabled={!canSave}
-      onclick={handleSave}
-      style="padding-inline: 35px; padding-block: 8px;"
-    >
-      Salvar
-    </Button>
+    <Button id="save" disabled={!canSave} onclick={handleSave}>Salvar</Button>
   </div>
 </div>
 
 <style>
+  #preview {
+    display: flex;
+    align-items: center;
+    margin-top: 25px;
+
+    > span {
+      margin-bottom: 0;
+      margin-right: 10px;
+    }
+  }
+
+  :global(#cancel) {
+    padding-inline: 12px;
+    margin-right: 12px;
+  }
+
+  :global(#save) {
+    padding-inline: 35px;
+    padding-block: 8px;
+  }
+
   .label {
     color: var(--text-contrast);
     font-weight: bold;
