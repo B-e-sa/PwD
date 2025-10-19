@@ -9,7 +9,6 @@
   import Tag from "./Tag.svelte";
   import TagSelector from "./TagSelector.svelte";
   import TextArea from "./TextArea.svelte";
-  import { writeUserData } from "../../utils/userDataActions";
   import userStorage from "../../stores/userStorage";
 
   type EditCommandErrors = Partial<Command>;
@@ -76,8 +75,6 @@
           data: { ...prev.data, commands: [...prev.data.commands, properties] },
         };
       });
-
-      await writeUserData($userStorage.profile, $userStorage.data);
     }
 
     if (props.onCreate) props.onCreate();
