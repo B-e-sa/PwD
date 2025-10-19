@@ -8,31 +8,24 @@
     readUserDataFile,
     ensureDataFiles,
   } from "../utils/userDataActions";
-  import { navigate } from "../utils/navigate";
   import WindowBar from "$lib/components/WindowBar.svelte";
   import userStorage from "../stores/userStorage";
+  import { goto } from "$app/navigation";
 
   let user = $state("");
 
   let action = $state<"login" | "register">("login");
 
   async function setUserData(profile: string) {
-    const { commands, tags, colors } = await readUserDataFile(profile);
-
-    $userStorage.profile = profile;
-    $userStorage.data.commands = commands;
-    $userStorage.data.tags = tags;
-    $userStorage.data.colors = colors;
-
-    await new Promise(r => setTimeout(r, 2000));
-
+    const data = await readUserDataFile(profile);
+    userStorage.set({ profile, data });
   }
 
   async function handleRegister() {
     const tUser = user.trim();
     $userStorage.profile = tUser;
     await ensureDataFiles(tUser);
-    navigate(window, "/home");
+    goto("/home");
   }
 
   async function handleLogin() {
@@ -42,7 +35,7 @@
     if (tUser) {
       if (await profileExists(tUser)) {
         await setUserData(tUser);
-        navigate(window, "/home");
+        goto("/home");
       } else {
         action = "register";
       }
@@ -60,12 +53,12 @@
   }
 
   onMount(() => {
-    window.addEventListener("keyup", (e) => {
-      handleEnterKey(e);
-    });
+    const handleKeyUp = (e: KeyboardEvent) => handleEnterKey(e);
+
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      window.removeEventListener("resize", (e) => handleEnterKey(e));
+      window.removeEventListener("keyup", handleKeyUp);
     };
   });
 </script>
