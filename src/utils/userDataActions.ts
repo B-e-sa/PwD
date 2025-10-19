@@ -67,8 +67,6 @@ export async function writeUserData(
       encoder.encode(JSON.stringify(data ?? defaultUserData)),
       baseDir
     );
-
-    console.log(await readUserDataFile(profile));
   } catch (err) {
     // TODO
   }
