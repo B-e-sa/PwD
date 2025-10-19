@@ -3,7 +3,7 @@
   import Close from "../../assets/icons/Close.svelte";
   import Confirm from "../../assets/icons/Confirm.svelte";
   import Dots from "../../assets/icons/Dots.svelte";
-  import commands from "../../stores/commands.svelte";
+  import userStorage from "../../stores/userStorage";
 
   const Actions = {
     None: 0,
@@ -29,7 +29,12 @@
   }
 
   function handleDelete() {
-    commands.update(() => $commands.filter((c) => c.uuid != commandUUID));
+    userStorage.update((prev) => {
+      return {
+        ...prev,
+        commands: prev.data.commands.filter((c) => c.uuid != commandUUID),
+      };
+    });
   }
 
   function handleSetEditing() {

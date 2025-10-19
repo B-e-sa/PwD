@@ -18,11 +18,7 @@
   }: TagProps = $props();
 
   function toggleHover() {
-    console.log("oi");
-
-    if (deletable) {
-      hovering = !hovering;
-    }
+    if (deletable) hovering = !hovering;
   }
 </script>
 

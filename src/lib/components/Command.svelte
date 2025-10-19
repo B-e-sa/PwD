@@ -1,6 +1,6 @@
 <script lang="ts">
   import Arrow from "../../assets/icons/Arrow.svelte";
-  import tags from "../../stores/tags.svelte";
+  import userStorage from "../../stores/userStorage";
   import type { Command } from "../../types/Command";
   import CommandEditor from "./CommandEditor.svelte";
   import CommandLine from "./CommandLine.svelte";
@@ -51,7 +51,7 @@
   }
 
   function findTag(uuid: string) {
-    return $tags.find((t) => t.uuid === uuid);
+    return $userStorage.data.tags.find((t) => t.uuid === uuid);
   }
 
   const listFormatter = new Intl.ListFormat("en", {
@@ -156,6 +156,7 @@
     }
 
     .label {
+      color: var(--text-contrast);
       font-weight: bold;
       margin-bottom: 8px;
     }

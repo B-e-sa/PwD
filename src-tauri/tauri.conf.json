@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "pwv",
+  "productName": "PwV",
   "version": "0.1.0",
-  "identifier": "com.joaos.pwv",
+  "identifier": "PwV",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,6 +12,10 @@
   "app": {
     "windows": [
       {
+        "minHeight": 650,
+        "minWidth": 650,
+        "decorations": false,
+        "transparent": true,
         "title": "pwv",
         "width": 800,
         "height": 600

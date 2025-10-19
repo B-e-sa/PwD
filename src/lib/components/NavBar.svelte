@@ -1,5 +1,5 @@
 <script lang="ts">
-  import layout from "../../stores/layout.svelte";
+  import layout from "../../stores/layout";
 </script>
 
 <header>
@@ -34,7 +34,8 @@
 
   header {
     padding-inline: 25px;
-    padding-block: 25px;
+    padding-top: 45px;
+    padding-bottom: 15px;
     display: flex;
     justify-content: space-between;
     border-bottom: var(--border);

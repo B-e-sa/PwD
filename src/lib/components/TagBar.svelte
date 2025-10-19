@@ -2,8 +2,8 @@
   import Arrow from "../../assets/icons/Arrow.svelte";
   import Close from "../../assets/icons/Close.svelte";
   import Search from "../../assets/icons/Search.svelte";
-  import layout from "../../stores/layout.svelte";
-  import tags from "../../stores/tags.svelte";
+  import layout from "../../stores/layout";
+  import userStorage from "../../stores/userStorage";
   import type { Tag } from "../../types/Tag";
   import Button from "./Button.svelte";
   import Input from "./Input.svelte";
@@ -20,7 +20,7 @@
   let selectedTag = $state<Tag | null>();
   let search = $state<string>("");
   let filteredTags = $derived(
-    $tags.filter((t) =>
+    $userStorage.data.tags.filter((t) =>
       t.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
     )
   );

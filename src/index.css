@@ -24,12 +24,16 @@ button {
   background-color: transparent;
 }
 
+
 body {
   position: relative;
   overflow-x: hidden;
+  overflow-y: hidden;
   background-color: var(--bg-dark);
   font-family: "Noto Sans";
   font-size: 0.8rem;
+  border-radius: var(--border-radius);
+  user-select: none;
 }
 
 .fm {

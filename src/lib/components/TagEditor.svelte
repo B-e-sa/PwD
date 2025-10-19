@@ -1,7 +1,5 @@
 <script lang="ts">
-  import type { newMenu } from "@tauri-apps/api/menu/base";
-  import colors from "../../stores/colors.svelte";
-  import tags from "../../stores/tags.svelte";
+  import userStorage from "../../stores/userStorage";
   import type { Tag as TagType } from "../../types/Tag";
   import stringNotEmpty from "../../utils/stringNotEmpty";
   import Button from "./Button.svelte";
@@ -35,19 +33,25 @@
     if (!canSave) return;
 
     if (!props.uuid) {
-      tags.update((prev) => [
-        ...prev,
-        {
-          uuid: crypto.randomUUID(),
-          color: selectedColor,
-          name: newName,
-        },
-      ]);
+      userStorage.update((prev) => {
+        return {
+          ...prev,
+          tags: [
+            ...prev.data.tags,
+            {
+              uuid: crypto.randomUUID(),
+              color: selectedColor,
+              name: newName,
+            },
+          ],
+        };
+      });
+
       props.onSave();
       return;
     }
 
-    const tagIndex = $tags.findIndex((t) => {
+    const tagIndex = $userStorage.data.tags.findIndex((t) => {
       t.uuid === props.uuid;
     });
 
@@ -59,11 +63,16 @@
     const color = props.color === selectedColor ? props.color : selectedColor;
     const name = props.name === newName ? props.name : newName;
 
-    tags.update((tag) =>
-      tag.map((t) => {
+    userStorage.update((prev) => {
+      const updatedTagArray = prev.data.tags.map((t) => {
         return t.uuid === props.uuid ? { ...t, name, color } : t;
-      })
-    );
+      });
+
+      return {
+        ...prev,
+        tags: updatedTagArray,
+      };
+    });
 
     props.onSave();
   }
@@ -79,7 +88,7 @@
   />
   <p class="label">Cor:</p>
   <div class="flex align-center">
-    {#each $colors as color}
+    {#each $userStorage.data.colors as color}
       <button
         aria-label="color-select"
         style={`${selectedColor === color ? "border: 2px dashed var(--primary)" : ""}`}

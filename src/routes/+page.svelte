@@ -1,114 +1,150 @@
 <script lang="ts">
-  import AddButton from "$lib/components/AddButton.svelte";
-  import CommandEditor from "$lib/components/CommandEditor.svelte";
-  import SearchFilter from "$lib/components/SearchFilter.svelte";
-  import TagBar from "$lib/components/TagBar.svelte";
-  import Search from "../assets/icons/Search.svelte";
-  import type { Search as SearchProps } from "../types/Filters";
+  import Button from "$lib/components/Button.svelte";
+  import Input from "$lib/components/Input.svelte";
+  import { onMount } from "svelte";
   import "../index.css";
-  import Command from "../lib/components/Command.svelte";
-  import Input from "../lib/components/Input.svelte";
-  import NavBar from "../lib/components/NavBar.svelte";
-  import commands from "../stores/commands.svelte";
-  import layout from "../stores/layout.svelte";
-  import tags from "../stores/tags.svelte";
-  import { AttributesEnum, OrdersEnum } from "../types/Filters";
-  import { filterCommands } from "../utils/filterCommands";
+  import {
+    profileExists,
+    readUserDataFile,
+    ensureDataFiles,
+  } from "../utils/userDataActions";
+  import { navigate } from "../utils/navigate";
+  import WindowBar from "$lib/components/WindowBar.svelte";
+  import userStorage from "../stores/userStorage";
 
-  let search = $state<SearchProps>({
-    search: "",
-    filter: AttributesEnum.Command,
-    order: OrdersEnum.Updated,
-  });
+  let user = $state("");
 
-  function handleSearch(
-    e: Event & {
-      currentTarget: EventTarget & HTMLInputElement;
+  let action = $state<"login" | "register">("login");
+
+  async function setUserData(profile: string) {
+    const { commands, tags, colors } = await readUserDataFile(profile);
+
+    $userStorage.profile = profile;
+    $userStorage.data.commands = commands;
+    $userStorage.data.tags = tags;
+    $userStorage.data.colors = colors;
+
+    await new Promise(r => setTimeout(r, 2000));
+
+  }
+
+  async function handleRegister() {
+    const tUser = user.trim();
+    $userStorage.profile = tUser;
+    await ensureDataFiles(tUser);
+    navigate(window, "/home");
+  }
+
+  async function handleLogin() {
+    if (!user) return;
+
+    const tUser = user.trim();
+    if (tUser) {
+      if (await profileExists(tUser)) {
+        await setUserData(tUser);
+        navigate(window, "/home");
+      } else {
+        action = "register";
+      }
     }
-  ) {
-    search = { ...search, search: e.currentTarget.value };
   }
 
-  let addingCommand = $state(false);
-
-  function toggleAddingCommand() {
-    addingCommand = !addingCommand;
+  function handleEnterKey(e: KeyboardEvent | UIEvent) {
+    if ((e as KeyboardEvent).key === "Enter") {
+      if (action === "login") {
+        handleLogin();
+      } else {
+        handleRegister();
+      }
+    }
   }
 
-  const filteredCommands = $derived(filterCommands($commands, $tags, search));
+  onMount(() => {
+    window.addEventListener("keyup", (e) => {
+      handleEnterKey(e);
+    });
+
+    return () => {
+      window.removeEventListener("resize", (e) => handleEnterKey(e));
+    };
+  });
 </script>
 
-<NavBar />
-{#if $layout.tagBarOpen}
-  <TagBar />
-{/if}
-
-<div id="page">
-  <h1 class="fl">Comandos Salvos</h1>
-  <Input
-    value={search.search}
-    oninput={handleSearch}
-    placeholder={search.filter === AttributesEnum.Command
-      ? "Procurar"
-      : search.filter === AttributesEnum.Flags ||
-          search.filter === AttributesEnum.Tags
-        ? "Separe por virgula"
-        : ""}
-    Adorment={Search}
-    adormentProps={{ height: 25, width: 25, stroke: "var(--font-color)" }}
-  />
-  <div id="actions">
-    <div>
-      <SearchFilter
-        class="action"
-        type="attributes"
-        currentFilter={search.filter}
-        onSelect={(f) => (search.filter = f as AttributesEnum)}
+<WindowBar />
+<div id="cont">
+  <div id="main">
+    <h1 class="fl">{action === "login" ? "Bem Vindo!" : "Novo Perfil"}</h1>
+    <p style="text-align: center;">
+      {action === "login"
+        ? "Entre com o seu nome de perfil"
+        : "Este perfil não existe ou foi digitado de forma incorreta, deseja voltar ao login ou criar um novo?"}
+      {#if action === "login"}<br /> (caso não tenha, digite um novo){/if}
+    </p>
+    {#if action === "login"}
+      <Input
+        wrapperProps={{ style: "margin-bottom: 15px;" }}
+        placeholder="Nome de perfil"
+        value={user}
+        onkeyup={(e) => (user = e.currentTarget.value)}
       />
-      <SearchFilter
-        class="action"
-        type="order"
-        currentFilter={search.order}
-        onSelect={(f) => (search.order = f as OrdersEnum)}
-      />
-    </div>
-    <AddButton
-      style={addingCommand ? "rotate: 45deg" : ""}
-      onclick={toggleAddingCommand}
-    />
-  </div>
-
-  <div>
-    {#if addingCommand}
-      <CommandEditor
-        onCreate={() => (addingCommand = false)}
-        style="margin-bottom: 35px;"
-      />
+      <Button disabled={user.trim().length === 0} onclick={handleLogin}>
+        Entrar
+      </Button>
+    {:else}
+      <div id="buttons">
+        <Button onclick={() => (action = "login")} variant="transparent">
+          Voltar
+        </Button>
+        <Button onclick={handleRegister}>Criar Novo</Button>
+      </div>
     {/if}
-    {#each filteredCommands as command (command.uuid)}
-      <Command {...command} />
-    {/each}
   </div>
 </div>
 
 <style>
-  h1 {
-    color: var(--text-contrast);
-    margin-bottom: 25px;
-    margin-top: 40px;
-  }
-
-  #actions {
-    margin-top: 10px;
+  #cont {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
   }
 
-  :global(.action) {
-    margin-bottom: 10px;
+  #main {
+    width: 350px;
+    border-radius: var(--border-radius);
+
+    & > p {
+      color: var(--font-color);
+      margin-bottom: 25px;
+    }
+
+    :global(button) {
+      text-align: center;
+      width: 100%;
+      padding-block: 10px;
+    }
   }
 
-  #page {
-    padding-inline: 10vw;
+  h1 {
+    text-align: center;
+    color: var(--text-contrast);
+    margin-bottom: 5px;
+  }
+
+  #buttons {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    :global(button) {
+      &:nth-child(1) {
+        margin-right: 10px;
+      }
+
+      padding-block: 10px;
+      padding-inline: 20px;
+    }
   }
 </style>

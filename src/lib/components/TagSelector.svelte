@@ -1,7 +1,7 @@
 <script lang="ts">
   import handleClickOutside from "../../actions/handleOutsideClick";
   import Arrow from "../../assets/icons/Arrow.svelte";
-  import tags from "../../stores/tags.svelte";
+  import userStorage from "../../stores/userStorage";
   import Tag, { type TagProps } from "./Tag.svelte";
 
   const {
@@ -15,14 +15,16 @@
   let open = $state(false);
 
   let filteredTags = $derived(
-    $tags.filter((ft) => {
+    $userStorage.data.tags.filter((ft) => {
       return selectedTags && selectedTags.length != 0
         ? !selectedTags.some((t) => t.name === ft.name)
         : true;
     })
   );
 
-  const noTagsLeft = $derived(selectedTags.length === $tags.length);
+  const noTagsLeft = $derived(
+    selectedTags.length === $userStorage.data.tags.length
+  );
 
   function handleChooseTag() {
     if (!noTagsLeft) open = !open;
@@ -35,7 +37,7 @@
     onclick={handleChooseTag}
     id="tag-selector"
   >
-    <span>{$tags[0].name}</span>
+    <span>Tag</span>
     <div
       style="{`width: 18px; height: 18px; ${open && filteredTags.length != 0 && 'rotate: 180deg;'}`};"
     >
@@ -61,11 +63,11 @@
 <style>
   #wrapper {
     position: relative;
+    width: fit-content;
   }
 
   #items {
     padding-bottom: 8px;
-    width: 100px;
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -86,6 +88,5 @@
     padding-inline: 15px;
     padding-block: 5px;
     border: none;
-    width: 100px;
   }
 </style>

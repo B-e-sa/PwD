@@ -1,16 +1,16 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
-  import Input from "./Input.svelte";
-  import TagSelector from "./TagSelector.svelte";
-  import type { Tag as TagType } from "../../types/Tag";
-  import Tag from "./Tag.svelte";
-  import commands from "../../stores/commands.svelte";
   import { fly } from "svelte/transition";
-  import stringNotEmpty from "../../utils/stringNotEmpty";
   import type { Command } from "../../types/Command";
-  import TextArea from "./TextArea.svelte";
+  import type { Tag as TagType } from "../../types/Tag";
+  import stringNotEmpty from "../../utils/stringNotEmpty";
   import Button from "./Button.svelte";
-  import tags from "../../stores/tags.svelte";
+  import Input from "./Input.svelte";
+  import Tag from "./Tag.svelte";
+  import TagSelector from "./TagSelector.svelte";
+  import TextArea from "./TextArea.svelte";
+  import { writeUserData } from "../../utils/userDataActions";
+  import userStorage from "../../stores/userStorage";
 
   type EditCommandErrors = Partial<Command>;
 
@@ -22,7 +22,7 @@
 
   function searchTags(uuids: string[]): TagType[] {
     return uuids
-      .map((id) => $tags.find((t) => t.uuid === id))
+      .map((id) => $userStorage.data.tags.find((t) => t.uuid === id))
       .filter((t): t is TagType => t !== undefined);
   }
 
@@ -34,7 +34,7 @@
 
   const editing = !!props.uuid;
 
-  function handleEdit() {
+  async function handleEdit() {
     const properties = {
       uuid: props.uuid || crypto.randomUUID(),
       command: "",
@@ -64,11 +64,20 @@
       properties.tags = commandTags.map((t) => t.uuid);
 
     if (editing) {
-      const idx = $commands.findIndex((c) => c.uuid === props.uuid);
-      $commands[idx] = properties;
+      const idx = $userStorage.data.commands.findIndex(
+        (c) => c.uuid === props.uuid
+      );
+      $userStorage.data.commands[idx] = properties;
       if (props.onEdit) props.onEdit();
     } else {
-      commands.update((prev) => [...prev, properties]);
+      userStorage.update((prev) => {
+        return {
+          ...prev,
+          data: { ...prev.data, commands: [...prev.data.commands, properties] },
+        };
+      });
+
+      await writeUserData($userStorage.profile, $userStorage.data);
     }
 
     if (props.onCreate) props.onCreate();

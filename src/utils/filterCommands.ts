@@ -2,9 +2,6 @@ import type { Command } from "../types/Command";
 import type { Tag } from "../types/Tag";
 import { AttributesEnum, OrdersEnum } from "../types/Filters";
 
-/**
- * Filtra e ordena os comandos de acordo com os filtros e ordem selecionados.
- */
 export function filterCommands(
   commands: Command[],
   tags: Tag[],
