@@ -38,7 +38,7 @@
   p {
     position: absolute;
     font-size: 0.6rem;
-    right: 16%;
+    right: 10px;
   }
 
   button {

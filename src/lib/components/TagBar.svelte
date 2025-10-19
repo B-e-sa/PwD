@@ -112,6 +112,7 @@
     width: 450px;
     height: 100vh;
     max-height: 100vh;
+    padding-top: 15px;
     top: 0;
     right: 0;
     position: fixed;

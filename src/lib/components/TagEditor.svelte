@@ -1,5 +1,8 @@
 <script lang="ts">
-  import userStorage from "../../stores/userStorage";
+  import userStorage, {
+    replaceUserData,
+    updateUserData,
+  } from "../../stores/userStorage";
   import type { Tag as TagType } from "../../types/Tag";
   import stringNotEmpty from "../../utils/stringNotEmpty";
   import Button from "./Button.svelte";
@@ -14,8 +17,6 @@
   let newName = $state<string>(props.name || "");
   let selectedColor = $state<string>(props.color || "#ffffff");
 
-  // TODO:
-  // usar para desativar botão
   let canSave = $derived(
     // name was changed
     (stringNotEmpty(newName) && newName.trim() != props.name) ||
@@ -33,18 +34,10 @@
     if (!canSave) return;
 
     if (!props.uuid) {
-      userStorage.update((prev) => {
-        return {
-          ...prev,
-          tags: [
-            ...prev.data.tags,
-            {
-              uuid: crypto.randomUUID(),
-              color: selectedColor,
-              name: newName,
-            },
-          ],
-        };
+      updateUserData("tags", {
+        uuid: crypto.randomUUID(),
+        color: selectedColor,
+        name: newName,
       });
 
       props.onSave();
@@ -63,16 +56,11 @@
     const color = props.color === selectedColor ? props.color : selectedColor;
     const name = props.name === newName ? props.name : newName;
 
-    userStorage.update((prev) => {
-      const updatedTagArray = prev.data.tags.map((t) => {
-        return t.uuid === props.uuid ? { ...t, name, color } : t;
-      });
-
-      return {
-        ...prev,
-        tags: updatedTagArray,
-      };
+    const updatedTagArray = $userStorage.data.tags.map((t) => {
+      return t.uuid === props.uuid ? { ...t, name, color } : t;
     });
+
+    replaceUserData("tags", updatedTagArray);
 
     props.onSave();
   }

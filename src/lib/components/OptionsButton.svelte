@@ -4,7 +4,7 @@
   import Close from "../../assets/icons/Close.svelte";
   import Confirm from "../../assets/icons/Confirm.svelte";
   import Dots from "../../assets/icons/Dots.svelte";
-  import userStorage from "../../stores/userStorage";
+  import userStorage, { replaceUserData } from "../../stores/userStorage";
 
   const Actions = {
     None: 0,
@@ -30,15 +30,11 @@
   }
 
   function handleDelete() {
-    userStorage.update((prev) => {
-      return {
-        ...prev,
-        data: {
-          ...prev.data,
-          commands: prev.data.commands.filter((c) => c.uuid != commandUUID),
-        },
-      };
-    });
+    const updatedCommandArray = $userStorage.data.commands.filter(
+      (c) => c.uuid != commandUUID
+    );
+
+    replaceUserData("commands", updatedCommandArray);
 
     $state.snapshot($userStorage);
   }

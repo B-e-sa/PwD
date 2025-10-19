@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
   import { fly } from "svelte/transition";
+  import userStorage, { updateUserData } from "../../stores/userStorage";
   import type { Command } from "../../types/Command";
   import type { Tag as TagType } from "../../types/Tag";
   import stringNotEmpty from "../../utils/stringNotEmpty";
@@ -9,7 +10,6 @@
   import Tag from "./Tag.svelte";
   import TagSelector from "./TagSelector.svelte";
   import TextArea from "./TextArea.svelte";
-  import userStorage from "../../stores/userStorage";
 
   type EditCommandErrors = Partial<Command>;
 
@@ -69,12 +69,7 @@
       $userStorage.data.commands[idx] = properties;
       if (props.onEdit) props.onEdit();
     } else {
-      userStorage.update((prev) => {
-        return {
-          ...prev,
-          data: { ...prev.data, commands: [...prev.data.commands, properties] },
-        };
-      });
+      updateUserData("commands", properties);
     }
 
     if (props.onCreate) props.onCreate();
@@ -171,6 +166,7 @@
     border: var(--border);
     border-radius: var(--border-radius);
     padding: 15px;
+    margin-bottom: 35px;
 
     label {
       font-weight: bold;

@@ -86,12 +86,9 @@
     />
   </div>
 
-  <div>
+  <div id="commands">
     {#if addingCommand}
-      <CommandEditor
-        onCreate={() => (addingCommand = false)}
-        style="margin-bottom: 35px;"
-      />
+      <CommandEditor onCreate={() => (addingCommand = false)} />
     {/if}
     {#each filteredCommands as command (command.uuid)}
       <Command {...command} />
@@ -100,6 +97,12 @@
 </div>
 
 <style>
+  #commands {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 450px;
+  }
+
   h1 {
     color: var(--text-contrast);
     margin-bottom: 25px;
