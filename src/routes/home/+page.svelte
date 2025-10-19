@@ -39,10 +39,6 @@
   const filteredCommands = $derived(
     filterCommands($userStorage.data.commands, $userStorage.data.tags, search)
   );
-
-  onMount(() => {
-    console.log($state.snapshot($userStorage.profile));
-  });
 </script>
 
 <WindowBar />

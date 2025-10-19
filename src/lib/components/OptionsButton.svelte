@@ -35,8 +35,6 @@
     );
 
     replaceUserData("commands", updatedCommandArray);
-
-    $state.snapshot($userStorage);
   }
 
   function handleEditButton() {
