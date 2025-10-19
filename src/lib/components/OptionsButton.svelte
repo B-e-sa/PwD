@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { stat } from "@tauri-apps/plugin-fs";
   import handleClickOutside from "../../actions/handleOutsideClick";
   import Close from "../../assets/icons/Close.svelte";
   import Confirm from "../../assets/icons/Confirm.svelte";
@@ -15,7 +16,7 @@
   let {
     commandUUID,
     setEditing,
-  }: { commandUUID: string; setEditing?: (...args: any) => any } = $props();
+  }: { commandUUID: string; setEditing: (...args: any) => any } = $props();
   let open = $state(false);
   let action = $state<ActionsEnum>(Actions.None);
 
@@ -32,14 +33,29 @@
     userStorage.update((prev) => {
       return {
         ...prev,
-        commands: prev.data.commands.filter((c) => c.uuid != commandUUID),
+        data: {
+          ...prev.data,
+          commands: prev.data.commands.filter((c) => c.uuid != commandUUID),
+        },
       };
     });
+
+    $state.snapshot($userStorage);
+  }
+
+  function handleEditButton() {
+    if (action === Actions.None) handleSetEditing();
+    if (action === Actions.Excluding) action = Actions.None;
+  }
+
+  function handleDeleteButton() {
+    if (action === Actions.Excluding) handleDelete();
+    if (action === Actions.None) promptDelete();
   }
 
   function handleSetEditing() {
     action = Actions.Editing;
-    if (setEditing) setEditing();
+    setEditing();
   }
 </script>
 
@@ -50,22 +66,14 @@
 >
   {#if open}
     <div id="options-cont">
-      <button
-        id="edit"
-        onclick={action === Actions.Editing
-          ? () => (action = Actions.None)
-          : handleSetEditing}
-      >
+      <button id="edit" onclick={handleEditButton}>
         {#if action === Actions.Excluding}
           <Close id="close" width={12} height={12} />
         {:else}
           Editar
         {/if}
       </button>
-      <button
-        id="delete"
-        onclick={action === Actions.Excluding ? handleDelete : promptDelete}
-      >
+      <button id="delete" onclick={handleDeleteButton}>
         {#if action === Actions.Excluding}
           <Confirm id="confirm" width={12} height={12} />
         {:else}
